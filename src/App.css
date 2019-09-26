@@ -20,3 +20,25 @@
 .App-link {
   color: #09d3ac;
 }
+
+nav {
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #ececec;
+}
+
+nav a {
+  text-decoration: none
+}
+
+.ReactTable .rt-td,
+.ReactTable .rt-th {
+    align-self: center
+}
+
+.ReactTable .rt-td input,
+.ReactTable .rt-th select {
+    width: 100%;
+    border: 0;
+    font-size: 16px;
+    background: transparent
+}
