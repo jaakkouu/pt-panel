@@ -1,11 +1,11 @@
-import React, {useState, useEffect} from 'react';
-import Link from '@material-ui/core/Link';
-import ReactTable from 'react-table';
-import Typography from '@material-ui/core/Typography';
-import 'react-table/react-table.css';
+import React, {useState, useEffect} from 'react'
+import ReactTable from 'react-table'
+import PageTitle from '../../components/PageTitle'
+import 'react-table/react-table.css'
 
 const Customers = () => {
 
+    const [customerTable, setReactTable] = useState();
     const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [filterable, setFilterable] = useState(false);
@@ -17,17 +17,14 @@ const Customers = () => {
         .then(response => response.json())
         .then((data) => {
             setLoading(false);
-            setFilterable(true);
             setCustomers(data.content);
         })
     }
 
     return <div>
-        <Typography variant="h4" component="h1" gutterBottom>
-            Customers
-            <Link style={{float:'right'}} onClick={() => setFilterable(!filterable)} component="button" underline="none">{filterable ? 'Unfilter' : 'Filter'}</Link>
-        </Typography>
+        <PageTitle title="Customers" />
         <ReactTable
+            ref={(r) => setReactTable(r)}
             columns={[
                 {
                     Header: 'Name',

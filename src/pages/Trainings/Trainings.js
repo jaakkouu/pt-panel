@@ -1,11 +1,10 @@
-import React, {useState, useEffect} from 'react';
-import Link from '@material-ui/core/Link';
-import Typography from '@material-ui/core/Typography';
-import DatePicker from "react-datepicker";
-import ReactTable from 'react-table';
-import moment from 'moment';
-import 'react-table/react-table.css';
-import "react-datepicker/dist/react-datepicker.css";
+import React, {useState, useEffect} from 'react'
+import DatePicker from "react-datepicker"
+import ReactTable from 'react-table'
+import moment from 'moment'
+import PageTitle from '../../components/PageTitle'
+import 'react-table/react-table.css'
+import "react-datepicker/dist/react-datepicker.css"
 
 const Trainings = () => {
 
@@ -99,10 +98,7 @@ const Trainings = () => {
     ];
 
     return <div>
-        <Typography variant="h4" component="h1" gutterBottom>
-            Trainings
-            <Link style={{float:'right'}} onClick={() => setFilterable(!filterable)} component="button" underline="none">{filterable ? 'Unfilter' : 'Filter'}</Link>
-        </Typography>
+        <PageTitle title="Trainings" />
         <ReactTable
             columns={columns}
             filterable={filterable}
