@@ -1,14 +1,21 @@
 import React, {useState, useEffect} from 'react'
 import DatePicker from "react-datepicker"
 import ReactTable from 'react-table'
+import Button from 'react-bootstrap/Button'
+import ButtonToolbar from 'react-bootstrap/ButtonToolbar'
+import InputGroup from 'react-bootstrap/InputGroup'
+import FormControl from 'react-bootstrap/FormControl'
 import moment from 'moment'
 import PageTitle from '../../components/PageTitle'
 import 'react-table/react-table.css'
 import "react-datepicker/dist/react-datepicker.css"
+import { FaSearch } from "react-icons/fa"
 
 const Trainings = () => {
 
+    const [table, setTable] = useState();
     const [trainings, setTrainings] = useState([]);
+    const [filtered, setFiltered] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filterable, setFilterable] = useState(false);
 
@@ -25,6 +32,13 @@ const Trainings = () => {
         }).then(() => {
             setLoading(false);
         })
+    }
+
+    const filterAll = ({target}) => {
+        const filteredData = trainings.filter(row => {
+            return row.activity.includes(target.value) || row.customer.fullname.includes(target.value);
+        });
+        setFiltered(filteredData);
     }
 
     const sliderColumnFilter = props => {
@@ -50,27 +64,36 @@ const Trainings = () => {
         </select>
     }
 
-    const datepickerColumnFilter = props => {        
+    const datepickerColumnFilter = props => {
         let min = Math.min.apply(Math, trainings.map(function(o) { return o[props.column.id]; })),
             max = Math.max.apply(Math, trainings.map(function(o) { return o[props.column.id]; })),
             selected = props.filter !== undefined ? new Date(props.filter.value) : new Date(min); 
-
         return <DatePicker
-        selected={selected}
-        minDate={new Date(min)}
-        maxDate={new Date(max)} 
-        onChange={(e) => {             
-            props.onChange(e);
-        }}
-        withPortal />
+            selected={selected}
+            minDate={new Date(min)}
+            maxDate={new Date(max)} 
+            onChange={(e) => {             
+                props.onChange(e);
+            }}
+            withPortal 
+        />
     }
 
-    const greaterOrEqual = (filter, row) => {
-        const rowValue = row[filter.id];
+    const customFilter = (filter, row) => {
+        let rowValue = row[filter.id];
         if(!rowValue) {
             return;
         }
-        const filterValue = filter.value || "";
+        let filterValue = filter.value || "";
+        if(filter.id === 'date'){
+            // Need to set times to 0 so that dates can match
+            rowValue = moment(rowValue).utcOffset(0);
+            rowValue.set({hour:0, minute:0, second:0, millisecond:0})
+            rowValue.toISOString();
+            rowValue.format();
+            filterValue = moment(filterValue);
+            return rowValue.isSame(filterValue, 'date');
+        } 
         return rowValue >= filterValue;
     }
 
@@ -84,13 +107,13 @@ const Trainings = () => {
             accessor: 'date',
             Cell: props => moment(props.original.date).format('MM/DD/YYYY'),
             Filter: datepickerColumnFilter,
-            filterMethod: (filter, row) => greaterOrEqual(filter, row)
+            filterMethod: (filter, row) => customFilter(filter, row)
         }, {
             Header: 'Duration',
             accessor: 'duration',
             Cell: props => `${props.original.duration} min`,
             Filter: sliderColumnFilter,
-            filterMethod: (filter, row) => greaterOrEqual(filter, row)
+            filterMethod: (filter, row) => customFilter(filter, row)
         }, {
             Header: "Customer",
             accessor: 'customer.fullname'               
@@ -98,12 +121,28 @@ const Trainings = () => {
     ];
 
     return <div>
-        <PageTitle title="Trainings" />
+        <PageTitle title='Trainings' />
+        <ButtonToolbar className='mb-2 justify-content-between'>
+            <Button onClick={() => setFilterable(!filterable)} variant="light">{filterable ? 'Unfilter' : 'Filter'}</Button>
+            <InputGroup>
+                <InputGroup.Prepend>
+                    <InputGroup.Text id="btnGroupSearch1"><FaSearch /></InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl
+                    onChange={filterAll}
+                    type="text"
+                    placeholder="Search for trainings..."
+                    aria-label="Search for trainings..."
+                    aria-describedby="btnGroupSearch1"
+                />
+            </InputGroup>
+        </ButtonToolbar>
         <ReactTable
+            ref={(r) => setTable(r)}
             columns={columns}
             filterable={filterable}
             loading={loading}
-            data={trainings}
+            data={filtered.length ? filtered : trainings}
         />
     </div>
 }
