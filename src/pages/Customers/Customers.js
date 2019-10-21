@@ -1,33 +1,40 @@
 import React, {useState, useEffect} from 'react'
 import ReactTable from 'react-table'
+
+import CustomerModal from '../../components/CustomerModal'
+import ConfirmationModal from '../../components/ConfirmationModal'
+import TrainingModal from '../../components/TrainingModal'
 import PageTitle from '../../components/PageTitle'
-import Button from 'react-bootstrap/Button'
-import ButtonToolbar from 'react-bootstrap/ButtonToolbar'
-import InputGroup from 'react-bootstrap/InputGroup'
-import FormControl from 'react-bootstrap/FormControl'
+
+import { Button, ButtonGroup, InputGroup, FormControl, ButtonToolbar, Dropdown, DropdownButton } from 'react-bootstrap'
+import moment from 'moment'
+import '../../App.css'
 import 'react-table/react-table.css'
-import { FaSearch } from "react-icons/fa"
+import 'react-datepicker/dist/react-datepicker.css'
+import { FaSearch, FaCog, FaBan, FaEdit, FaTrash, FaPlus } from 'react-icons/fa'
+
+// Using functions from API to get data
+import {getCustomers, getTrainings, deleteCustomer, saveCustomer, saveTraining} from '../../Api'
 
 const Customers = () => {
 
     const [table, setTable] = useState();
+    const [customerModal, setCustomerModal] = useState();
+    const [confirmationModal, setConfirmationModal] = useState();
+    const [trainingModal, setTrainingModal] = useState();
     const [customers, setCustomers] = useState([]);
+    const [trainings, setTrainings] = useState([]);
+    const [editable, setEditable] = useState(false);
     const [loading, setLoading] = useState(false);
     const [filtered, setFiltered] = useState([]);
     const [filterable, setFilterable] = useState(false);
 
-    useEffect(() => fetchData(), []);
+    useEffect(() => setData(), []);
 
-    const fetchData = () => {
-        fetch('https://customerrest.herokuapp.com/api/customers')
-        .then(response => response.json())
-        .then((data) => {
-            data.content.map((obj, i) => {
-                return obj.fullname = obj.firstname + ' ' + obj.lastname;
-            });
-            setCustomers(data.content);
-        }).then(() => setLoading(false))
-    }
+    const setData = () => {
+        getCustomers().then((data) => setCustomers(data.content));
+        getTrainings().then((data) => setTrainings(data));
+    };
 
     const filterAll = ({target}) => {
         const filteredData = customers.filter(row => {
@@ -36,19 +43,60 @@ const Customers = () => {
         setFiltered(filteredData);
     }
 
-    const customFilter = (filter, row) => {
-        let rowValue = row[filter.id];
-        if(!rowValue) {
-            return;
-        }
-        let filterValue = filter.value || "";
-        return rowValue >= filterValue;
+    const buttonCell = row => {
+        return <DropdownButton id="tableDropdown" drop="left" title={<FaCog size="0.8em" />}>
+            <Dropdown.Item variant="primary" onClick={() => addTraining(row)}><FaPlus /> Add Training</Dropdown.Item>
+            <Dropdown.Item variant="secondary" onClick={() => editCustomer(row)}><FaEdit /> Edit Customer</Dropdown.Item>
+            <Dropdown.Divider />
+            <Dropdown.Item variant="danger" onClick={() => removeCustomer(row)}><FaTrash /> Delete Customer</Dropdown.Item>
+        </DropdownButton>
     }
 
-    return <div>
+    const editCustomer = row => {
+        customerModal.confirm = () => {
+            let customer = customerModal.state.customer;
+            saveCustomer(customer).then(() => {
+                setData();
+                customerModal.close();
+            });
+        }
+        customerModal.open(row.original);
+    };
+
+    const addCustomer = () => customerModal.open();
+
+    const addTraining = row => {
+        trainingModal.modalTitle = `Adding Training For ${row.original.fullname}`;
+        trainingModal.confirm = () => {
+            let training = Object.assign({}, trainingModal.state.training);
+            training.date = moment(training.date).format('YYYY-M-D');
+            saveTraining(training).then(() => {
+                setData();
+                trainingModal.close();
+            });
+        };
+        trainingModal.open(row.original);
+    }
+
+    const removeCustomer = row => {
+        confirmationModal.modalTitle = row.original.fullname;
+        confirmationModal.confirm = () => {
+            deleteCustomer(row.original).then(() => {
+                setData();
+                confirmationModal.close();
+            });
+        };
+        confirmationModal.open();
+    };
+
+    return <>
         <PageTitle title='Customers' />
         <ButtonToolbar className='mb-2 justify-content-between'>
-            <Button onClick={() => setFilterable(!filterable)} variant="light">{filterable ? 'Unfilter' : 'Filter'}</Button>
+            <ButtonGroup>
+                <Button onClick={addCustomer} variant="primary" style={{paddingTop: '1px'}}><FaPlus /></Button>                            
+                <Button variant={editable ? 'danger' : 'secondary'} onClick={() => setEditable(!editable)} style={{paddingTop: '1px'}}>{editable ? <FaBan /> : <FaCog />}</Button>
+                <Button onClick={() => setFilterable(!filterable)} variant="light">{filterable ? 'Unfilter' : 'Filter'}</Button>            
+            </ButtonGroup>
             <InputGroup>
                 <InputGroup.Prepend>
                     <InputGroup.Text id="btnGroupSearch1"><FaSearch /></InputGroup.Text>
@@ -56,8 +104,8 @@ const Customers = () => {
                 <FormControl
                     onChange={filterAll}
                     type="text"
-                    placeholder="Search for trainings..."
-                    aria-label="Search for trainings..."
+                    placeholder="Search for customer..."
+                    aria-label="Search for customer..."
                     aria-describedby="btnGroupSearch1"
                 />
             </InputGroup>
@@ -74,14 +122,24 @@ const Customers = () => {
                 },  {
                     Header: 'Phone',
                     accessor: 'phone',
+                }, {
+                    filterable: false,
+                    Cell: buttonCell,
+                    sortable: false,
+                    width: 80,
+                    show: editable ? true : false
                 }
             ]}
             filterable={filterable}
             data={customers}
             loading={loading}
+            pageSize={filtered.length >= 5 || customers.length >= 5 ? 10 : 5}
             data={filtered.length ? filtered : customers}
         />
-    </div>
+        <CustomerModal ref={r => setCustomerModal(r) }/>
+        <ConfirmationModal ref={r => setConfirmationModal(r)} />
+        <TrainingModal calledFrom="customers" ref={r => setTrainingModal(r)} />
+    </>
 }
 
 export default Customers

@@ -3,7 +3,18 @@
 }
 
 .pageTitle {
-  margin: 10px 0 16px 0
+  margin: 16px 0
+}
+
+/* Fixes the fixes vertical align on button icon */
+.ReactTable .rt-td button svg {
+    top: -2px;
+    position: relative;
+    margin-right: 3px
+}
+
+.ReactTable .rt-tr-group {
+    min-height: 46px
 }
 
 .ReactTable .rt-td,
@@ -14,7 +25,40 @@
 .ReactTable .rt-td input,
 .ReactTable .rt-th select {
     width: 100%;
+    text-align: center;
     border: 0;
     font-size: 16px;
     background: transparent
+}
+
+.ReactTable .rt-td div[contenteditable=true] {
+    background-color: #0000;
+    width: 100%;
+    outline: none;
+    overflow: hidden
+}
+
+.ReactTable .rt-td:last-child {
+    overflow: inherit! important;
+}
+
+.ReactTable .rt-td select,
+.ReactTable .rt-td div[contenteditable=true] select {
+  width: 100%;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 3px 5px;
+  outline: none
+}
+
+.ReactTable #tableDropdown.dropdown-toggle::before {
+  display: none
+}
+
+.ReactTable #tableDropdown.dropdown-toggle {
+  padding: 0px 7px;
+}
+
+.ReactTable #tableDropdown.dropdown-toggle svg {
+  margin-right: 0;
 }

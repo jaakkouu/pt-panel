@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React from 'react'
 import PageTitle from '../../components/PageTitle'
 
 const Home = () => {
