@@ -6,6 +6,7 @@ import NavBar from './components/NavBar'
 import Home from './pages/Home/Home'
 import Customers from './pages/Customers/Customers'
 import Trainings from './pages/Trainings/Trainings'
+import Calendar from './pages/Calendar/Calendar'
 import Container from 'react-bootstrap/Container'
 
 import './App.css'
@@ -22,6 +23,7 @@ const App = () => {
                 <Route exact path="/" component={Home} />
                 <Route path="/customers" component={Customers} />
                 <Route path="/trainings" component={Trainings} />
+                <Route path="/calendar" component={Calendar} />
               </Switch>
             </Container>
         </div>

@@ -9,6 +9,7 @@ const NavigationBar = ({history}) => {
             <Nav.Link active={history.pathname === "/" ? true : false} href="/">Home</Nav.Link>
             <Nav.Link active={history.pathname === "/customers" ? true : false} href="/customers">Customers</Nav.Link>
             <Nav.Link active={history.pathname === "/trainings" ? true : false} href="/trainings">Trainings</Nav.Link>
+            <Nav.Link active={history.pathname === "/calendar" ? true : false} href="/calendar">Calendar</Nav.Link>
         </Nav>
       </Navbar>
 }
